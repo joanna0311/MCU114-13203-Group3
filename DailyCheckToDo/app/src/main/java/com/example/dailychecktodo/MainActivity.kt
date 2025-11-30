@@ -1,5 +1,8 @@
+package com.example.dailychecktodo
+
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import com.example.dailychecktodo.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -27,9 +30,9 @@ class MainActivity : AppCompatActivity() {
                 else -> null
             }
             tab.icon = when (position) {
-                0 -> getDrawable(R.drawable.ic_home)
-                1 -> getDrawable(R.drawable.ic_contacts)
-                2 -> getDrawable(R.drawable.ic_settings)
+                0 -> AppCompatResources.getDrawable(this, R.drawable.ic_home)
+                1 -> AppCompatResources.getDrawable(this, R.drawable.ic_contacts)
+                2 -> AppCompatResources.getDrawable(this, R.drawable.ic_settings)
                 else -> null
             }
         }.attach()

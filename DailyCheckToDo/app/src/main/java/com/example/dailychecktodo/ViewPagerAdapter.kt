@@ -1,8 +1,11 @@
-package com.example.dailychecktodo.com.example.dailychecktodo
+package com.example.dailychecktodo
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.example.dailychecktodo.ContactsFragment
+import com.example.dailychecktodo.HomeFragment
+import com.example.dailychecktodo.SettingsFragment
 
 // 這個 Adapter 負責管理 ViewPager2 中的所有 Fragment
 class ViewPagerAdapter(fragmentActivity: FragmentActivity) : FragmentStateAdapter(fragmentActivity) {
