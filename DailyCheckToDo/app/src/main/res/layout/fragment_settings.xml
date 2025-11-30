@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 性別選項 -->
+    <string-array name="gender_options">
+        <item>男</item>
+        <item>女</item>
+        <item>其他</item>
+    </string-array>
+
+    <!-- 習慣重要性選項 -->
+    <string-array name="priority_options">
+        <item>低</item>
+        <item>中</item>
+        <item>高</item>
+    </string-array>
+</resources>
