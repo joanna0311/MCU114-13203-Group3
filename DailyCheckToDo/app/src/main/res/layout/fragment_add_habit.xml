@@ -12,7 +12,7 @@
         android:id="@+id/title_add_habit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="新增習慣"
+        android:text="新增/編輯習慣"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,11 +48,71 @@
             android:layout_height="wrap_content" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Priority Dropdown Menu -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_habit_priority"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="重要性"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/til_habit_notes">
+
+        <AutoCompleteTextView
+            android:id="@+id/actv_priority"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Repetition Type Dropdown Menu -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_repetition_type"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="重複規則"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/til_habit_priority">
+
+        <AutoCompleteTextView
+            android:id="@+id/actv_repetition_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Days of the Week ChipGroup (Initially Hidden) -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_days_of_week"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/til_repetition_type">
+
+        <com.google.android.material.chip.Chip style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="日" android:id="@+id/chip_sun"/>
+        <com.google.android.material.chip.Chip style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="一" android:id="@+id/chip_mon"/>
+        <com.google.android.material.chip.Chip style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="二" android:id="@+id/chip_tue"/>
+        <com.google.android.material.chip.Chip style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="三" android:id="@+id/chip_wed"/>
+        <com.google.android.material.chip.Chip style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="四" android:id="@+id/chip_thu"/>
+        <com.google.android.material.chip.Chip style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="五" android:id="@+id/chip_fri"/>
+        <com.google.android.material.chip.Chip style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="六" android:id="@+id/chip_sat"/>
+
+    </com.google.android.material.chip.ChipGroup>
+
     <TextView
         android:id="@+id/button_details"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
         android:drawableEnd="@android:drawable/ic_media_play"
@@ -60,17 +120,16 @@
         android:padding="16dp"
         android:text="詳細資訊"
         android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/button_save"
-        app:layout_constraintTop_toBottomOf="@id/til_habit_notes" />
-    
+        app:layout_constraintEnd_toStartOf="@id/button_save" />
+
     <Button
         android:id="@+id/button_save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="儲存"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/button_details"
-        app:layout_constraintBottom_toBottomOf="@+id/button_details"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

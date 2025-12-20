@@ -6,35 +6,40 @@ import androidx.lifecycle.ViewModel
 
 class HabitViewModel : ViewModel() {
 
-    // --- 主要習慣列表 ---
-    private val _habits = MutableLiveData<MutableList<Habit>>().apply {
-        value = mutableListOf()
-    }
-    val habits: LiveData<MutableList<Habit>> = _habits
+    private val _habits = MutableLiveData<List<Habit>>(emptyList())
+    val habits: LiveData<List<Habit>> = _habits
 
-    // --- 正在編輯或新增的習慣 ---
     private val _editingHabit = MutableLiveData<Habit?>()
     val editingHabit: LiveData<Habit?> = _editingHabit
 
-    // --- 方法 ---
-
-    // 開始新增一個全新的習慣
-    fun startNewHabit() {
-        _editingHabit.value = Habit(name = "") // 建立一個空的暫存習慣
+    fun startNewHabit(dateString: String) {
+        _editingHabit.value = Habit(name = "", date = dateString)
     }
 
-    // 更新正在編輯的習慣
+    fun startEditingHabit(habit: Habit) {
+        _editingHabit.value = habit
+    }
+
     fun updateEditingHabit(habit: Habit) {
         _editingHabit.value = habit
     }
 
-    // 將正在編輯的習慣儲存到主要列表中
     fun saveEditingHabit() {
-        _editingHabit.value?.let { habitToSave ->
-            val currentList = _habits.value ?: mutableListOf()
+        val habitToSave = _editingHabit.value ?: return
+        val currentList = _habits.value.orEmpty().toMutableList()
+
+        // Check if the habit already exists by its ID
+        val existingIndex = currentList.indexOfFirst { it.id == habitToSave.id }
+
+        if (existingIndex != -1) {
+            // It's an existing habit, so update it at its position
+            currentList[existingIndex] = habitToSave
+        } else {
+            // It's a new habit, so add it to the list
             currentList.add(habitToSave)
-            _habits.value = currentList
         }
-        _editingHabit.value = null // 清空暫存
+
+        _habits.value = currentList
+        _editingHabit.value = null
     }
 }

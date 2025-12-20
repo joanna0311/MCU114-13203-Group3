@@ -52,25 +52,6 @@
             android:clickable="true" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/til_priority"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="重要性"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/til_time">
-
-        <AutoCompleteTextView
-            android:id="@+id/auto_complete_priority"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="none" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switch_is_public"
         android:layout_width="0dp"
@@ -80,7 +61,7 @@
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/til_priority" />
+        app:layout_constraintTop_toBottomOf="@id/til_time" />
 
     <Button
         android:id="@+id/button_save_details"

@@ -1,15 +1,23 @@
 package com.example.dailychecktodo
 
+import android.app.AlarmManager
 import android.app.DatePickerDialog
-import android.app.TimePickerDialog
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.dailychecktodo.databinding.FragmentHabitDetailsBinding
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -20,7 +28,6 @@ class HabitDetailsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val habitViewModel: HabitViewModel by activityViewModels()
-    private val calendar = Calendar.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,99 +40,165 @@ class HabitDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupViews()
-
         habitViewModel.editingHabit.observe(viewLifecycleOwner) { habit ->
             habit?.let {
-                // 當 ViewModel 中的資料變化時，更新 UI
-                if (binding.tilDate.editText?.text.toString() != it.date) {
-                    binding.tilDate.editText?.setText(it.date)
-                }
-                if (binding.tilTime.editText?.text.toString() != it.time) {
-                    binding.tilTime.editText?.setText(it.time)
-                }
-                if (binding.autoCompletePriority.text.toString() != it.priority) {
-                    binding.autoCompletePriority.setText(it.priority, false)
-                }
-                if (binding.switchIsPublic.isChecked != it.isPublic) {
-                    binding.switchIsPublic.isChecked = it.isPublic
-                }
+                binding.tilDate.editText?.setText(it.date)
+                binding.tilTime.editText?.setText(it.time)
+                binding.switchIsPublic.isChecked = it.isPublic
+            }
+        }
+
+        binding.tilDate.editText?.setOnClickListener {
+            showDatePicker()
+        }
+
+        binding.tilTime.editText?.setOnClickListener {
+            showTimePicker()
+        }
+
+        binding.switchIsPublic.setOnCheckedChangeListener { _, isChecked ->
+            habitViewModel.editingHabit.value?.let {
+                habitViewModel.updateEditingHabit(it.copy(isPublic = isChecked))
             }
         }
 
         binding.buttonSaveDetails.setOnClickListener {
-            habitViewModel.editingHabit.value?.let { currentHabit ->
-                val updatedHabit = currentHabit.copy(
-                    date = binding.tilDate.editText?.text.toString(),
-                    time = binding.tilTime.editText?.text.toString(),
-                    priority = binding.autoCompletePriority.text.toString(),
-                    isPublic = binding.switchIsPublic.isChecked
-                )
-                habitViewModel.updateEditingHabit(updatedHabit)
-            }
             requireActivity().supportFragmentManager.popBackStack()
         }
     }
 
-    private fun setupViews() {
-        // 設定重要性下拉選單的選項
-        val priorityOptions = resources.getStringArray(R.array.priority_options)
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, priorityOptions)
-        binding.autoCompletePriority.setAdapter(adapter)
-
-        // 設定日期和時間選擇器
-        setupDatepicker()
-        setupTimePicker()
+    private fun showDatePicker() {
+        val calendar = Calendar.getInstance()
+        val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, month)
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            updateDateInView(calendar)
+        }
+        DatePickerDialog(
+            requireContext(),
+            dateSetListener,
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
     }
 
-    private fun setupDatepicker() {
-        binding.tilDate.editText?.setOnClickListener { 
-            val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-                calendar.set(Calendar.YEAR, year)
-                calendar.set(Calendar.MONTH, month)
-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                updateDateInView()
+    private fun showTimePicker() {
+        val calendar = Calendar.getInstance()
+        val timeText = binding.tilTime.editText?.text.toString()
+        if (timeText.isNotEmpty()) {
+            val sdf = SimpleDateFormat("HH:mm", Locale.US)
+            try {
+                val date = sdf.parse(timeText)
+                if (date != null) {
+                    calendar.time = date
+                }
+            } catch (e: java.text.ParseException) {
+                // Keep calendar as current time if parsing fails
+            }
+        }
+
+        val picker = MaterialTimePicker.Builder()
+            .setInputMode(MaterialTimePicker.INPUT_MODE_KEYBOARD)
+            .setTimeFormat(TimeFormat.CLOCK_24H)
+            .setHour(calendar.get(Calendar.HOUR_OF_DAY))
+            .setMinute(calendar.get(Calendar.MINUTE))
+            .setTitleText("Set time")
+            .build()
+
+        picker.addOnPositiveButtonClickListener {
+            // Create a fresh calendar instance to avoid carrying over incorrect state
+            val finalCalendar = Calendar.getInstance()
+
+            // 1. Try to set the date from the text field. If empty or invalid, it will use today's date.
+            val dateText = binding.tilDate.editText?.text.toString()
+            if (dateText.isNotEmpty()) {
+                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                try {
+                    val parsedDate = sdf.parse(dateText)
+                    if (parsedDate != null) {
+                        finalCalendar.time = parsedDate
+                    }
+                } catch (e: java.text.ParseException) {
+                    // If parsing fails, it will just use today's date from getInstance()
+                }
             }
 
-            DatePickerDialog(
-                requireContext(),
-                dateSetListener,
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
+            // 2. Set the time from the picker.
+            finalCalendar.set(Calendar.HOUR_OF_DAY, picker.hour)
+            finalCalendar.set(Calendar.MINUTE, picker.minute)
+            finalCalendar.set(Calendar.SECOND, 0)
+            finalCalendar.set(Calendar.MILLISECOND, 0)
+
+            updateTimeInView(finalCalendar)
+        }
+
+        picker.show(childFragmentManager, "time_picker")
+    }
+
+    private fun updateDateInView(calendar: Calendar) {
+        val format = "yyyy-MM-dd"
+        val sdf = SimpleDateFormat(format, Locale.US)
+        val dateString = sdf.format(calendar.time)
+        binding.tilDate.editText?.setText(dateString)
+        habitViewModel.editingHabit.value?.let {
+            habitViewModel.updateEditingHabit(it.copy(date = dateString))
         }
     }
 
-    private fun setupTimePicker() {
-        binding.tilTime.editText?.setOnClickListener { 
-            val timeSetListener = TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute ->
-                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
-                calendar.set(Calendar.MINUTE, minute)
-                updateTimeInView()
-            }
-
-            TimePickerDialog(
-                requireContext(),
-                android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
-                timeSetListener,
-                calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE),
-                true // 24小時制
-            ).show()
+    private fun updateTimeInView(calendar: Calendar) {
+        val format = "HH:mm"
+        val sdf = SimpleDateFormat(format, Locale.US)
+        val timeString = sdf.format(calendar.time)
+        binding.tilTime.editText?.setText(timeString)
+        habitViewModel.editingHabit.value?.let {
+            habitViewModel.updateEditingHabit(it.copy(time = timeString))
         }
+        scheduleReminder(calendar)
     }
 
-    private fun updateDateInView() {
-        val myFormat = "yyyy-MM-dd"
-        val sdf = SimpleDateFormat(myFormat, Locale.TAIWAN)
-        binding.tilDate.editText?.setText(sdf.format(calendar.time))
-    }
+    private fun scheduleReminder(calendar: Calendar) {
+        val context = requireContext().applicationContext
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    private fun updateTimeInView() {
-        val myFormat = "HH:mm"
-        val sdf = SimpleDateFormat(myFormat, Locale.TAIWAN)
-        binding.tilTime.editText?.setText(sdf.format(calendar.time))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+            Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).also {
+                it.data = Uri.fromParts("package", requireActivity().packageName, null)
+                startActivity(it)
+            }
+            return
+        }
+
+        val finalCalendar = calendar.clone() as Calendar
+
+        // If the selected time is in the past, schedule it for the next day
+        if (finalCalendar.timeInMillis <= System.currentTimeMillis()) {
+            finalCalendar.add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        val habit = habitViewModel.editingHabit.value ?: return
+        val habitId = habit.id.hashCode()
+
+        val intent = Intent(context, HabitReminderReceiver::class.java).apply {
+            putExtra("HABIT_NAME", habit.name)
+            putExtra("HABIT_ID", habitId)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            habitId,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        alarmManager.setExact(
+            AlarmManager.RTC_WAKEUP,
+            finalCalendar.timeInMillis,
+            pendingIntent
+        )
+
+        Toast.makeText(context, "Reminder set for ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US).format(finalCalendar.time)}", Toast.LENGTH_LONG).show()
     }
 
     override fun onDestroyView() {
