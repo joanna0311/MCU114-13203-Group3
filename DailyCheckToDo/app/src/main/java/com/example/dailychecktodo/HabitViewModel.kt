@@ -68,6 +68,20 @@ class HabitViewModel : ViewModel() {
         }
     }
 
+    fun deleteHabit(habitToDelete: Habit) {
+        val currentList = _habits.value.orEmpty().toMutableList()
+        currentList.remove(habitToDelete)
+        _habits.value = currentList
+        saveHabitsToPreferences()
+    }
+
+    fun addHabit(habit: Habit) {
+        val currentList = _habits.value.orEmpty().toMutableList()
+        currentList.add(habit)
+        _habits.value = currentList
+        saveHabitsToPreferences()
+    }
+
     fun deleteHabits(habitsToDelete: List<Habit>) {
         val currentList = _habits.value.orEmpty().toMutableList()
         val idsToDelete = habitsToDelete.map { it.id }.toSet()

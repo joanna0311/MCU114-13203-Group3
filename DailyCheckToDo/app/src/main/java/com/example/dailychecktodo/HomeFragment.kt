@@ -8,8 +8,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.dailychecktodo.databinding.FragmentHomeBinding
+import com.google.android.material.snackbar.Snackbar
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -51,7 +54,7 @@ class HomeFragment : Fragment() {
         habitViewModel.habits.observe(viewLifecycleOwner) { habits ->
             filterHabitsForSelectedDate()
         }
-        filterHabitsForSelectedDate() 
+        filterHabitsForSelectedDate()
     }
 
     private fun updateTitle() {
@@ -87,21 +90,46 @@ class HomeFragment : Fragment() {
 
         val decoration = DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL)
         binding.recyclerViewHabits.addItemDecoration(decoration)
+
+        // Add ItemTouchHelper for swipe-to-delete
+        val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                return false // We don't want to handle move events
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                val habitToDelete = habitAdapter.getHabitAt(position)
+                habitViewModel.deleteHabit(habitToDelete)
+
+                // Optional: Show a snackbar with an undo option
+                Snackbar.make(binding.root, "Habit deleted", Snackbar.LENGTH_LONG).apply {
+                    setAction("UNDO") {
+                        habitViewModel.addHabit(habitToDelete)
+                    }
+                    show()
+                }
+            }
+        }
+
+        val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
+        itemTouchHelper.attachToRecyclerView(binding.recyclerViewHabits)
     }
+
 
     private fun navigateToEditScreen() {
         requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.main_container, AddHabitFragment()) 
+            .replace(R.id.main_container, AddHabitFragment())
             .addToBackStack(null)
             .commit()
     }
 
     private fun filterHabitsForSelectedDate() {
         val allHabits = habitViewModel.habits.value ?: emptyList()
-        
+
         val filteredList = allHabits.filter { habit ->
             when (habit.repetitionType) {
-                RepetitionType.DAILY -> true 
+                RepetitionType.DAILY -> true
                 RepetitionType.WEEKLY -> {
                     val selectedDayOfWeek = when (selectedDate.get(Calendar.DAY_OF_WEEK)) {
                         Calendar.SUNDAY -> DayOfWeek.SUNDAY

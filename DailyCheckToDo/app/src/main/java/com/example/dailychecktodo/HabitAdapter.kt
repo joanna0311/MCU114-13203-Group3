@@ -30,6 +30,10 @@ class HabitAdapter(
         notifyDataSetChanged()
     }
 
+    fun getHabitAt(position: Int): Habit {
+        return habits[position]
+    }
+
     fun getHabits(): List<Habit> {
         return habits
     }
