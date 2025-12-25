@@ -1,15 +1,26 @@
+# Folders and files created by Android Studio and Gradle
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.gradle/
+build/
+.cxx/
+.externalNativeBuild/
+captures/
+
+# Local configuration - Contains SDK path and sensitive data like API keys.
 local.properties
+
+# IDE files - Ignoring the whole folder is safer.
+.idea/
+
+# macOS specific
+.DS_Store
+
+# Build artifacts
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Keystore files - CRITICAL: Never check in your signing keys!
+*.jks
+*.keystore
